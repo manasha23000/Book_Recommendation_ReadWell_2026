@@ -31,14 +31,15 @@ def load_data():
 
 books_df, tfidf_matrix, sent_lookup = load_data()
 
-# label shown to staff, text colour, background colour
+# label shown to staff, text colour, background colour, small symbol in front of the label
 TIERS = {
-    "Strong reception": ("Readers loved this one", "#1B7F4B", "#E6F6EC"),
-    "Typical reception": ("Readers liked this one", "#23806F", "#E4F4F0"),
-    "Weaker reception": ("Mixed reactions", "#A9650F", "#FFF1D9"),
-    "Not enough reviews": ("Not enough reviews yet", "#5F6675", "#EEF0F4"),
-    "No reviews": ("No reviews in the data", "#5F6675", "#EEF0F4"),
+    "Strong reception": ("Readers loved this one", "#B3123F", "#FDE7EE", "♥"),
+    "Typical reception": ("Readers liked this one", "#23806F", "#E4F4F0", "●"),
+    "Weaker reception": ("Mixed reactions", "#A9650F", "#FFF1D9", "●"),
+    "Not enough reviews": ("Not enough reviews yet", "#5F6675", "#EEF0F4", "●"),
+    "No reviews": ("No reviews in the data", "#5F6675", "#EEF0F4", "●"),
 }
+
 TAG_STYLES = [("#6C4BD8", "#EFEAFE"), ("#D6336C", "#FDE8F0"), ("#1C7ED6", "#E5F1FD")]
 
 # ---------------------------------------------------------------
@@ -47,33 +48,39 @@ TAG_STYLES = [("#6C4BD8", "#EFEAFE"), ("#D6336C", "#FDE8F0"), ("#1C7ED6", "#E5F1
 st.markdown(
     """
 <style>
-.stApp {background:#F6F7FB;}
+.stApp {background:#E6E9F2;}
+[data-testid="stExpander"] {background:#FFFFFF; border-radius:12px;}
+/* white result cards: a hidden marker inside each card lets the style find it */
+[data-testid="stVerticalBlock"]:has(> [data-testid="stElementContainer"] .card-marker),
+[data-testid="stVerticalBlock"]:has(> .element-container .card-marker) {background:#FFFFFF; border-color:#D3D8E6 !important;}
+[data-testid="stElementContainer"]:has(.card-marker), .element-container:has(.card-marker) {display:none;}
 header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stToolbarActions"],
 [data-testid="stAppDeployButton"], [data-testid="stMainMenu"], [data-testid="stDecoration"],
 .stAppToolbar, #MainMenu, footer {display:none !important;}
 .block-container {max-width: 1150px; padding-top: 2rem;}
 .topbar {display:flex; align-items:center; justify-content:space-between; gap:20px;
-         background:#FFFFFF; border:1px solid #E6E8F0; border-radius:16px; padding:14px 22px; margin:6px 0 18px 0; overflow:hidden;}
+         background:linear-gradient(120deg,#F8B4C7 0%,#FBC6D5 55%,#E0C9FA 100%); border:1px solid #F0A0B8; border-radius:18px; padding:30px 30px; margin:6px 0 18px 0; overflow:hidden;}
 .brand {display:flex; align-items:center; gap:12px; min-width:0;}
-.brand-logo {font-size:34px;}
-.brand-name {font-size:24px; font-weight:800; color:#1B2340; line-height:1.1;}
+.brand-logo {font-size:48px;}
+.brand-name {font-size:36px; font-weight:800; color:#1B2340; line-height:1.1;}
 .brand-sub {font-size:16px; color:#5F6675; line-height:1.1;}
-.tagline {font-size:14px; color:#5F6675; margin-top:3px;}
+.tagline {font-size:16px; color:#4A5170; margin-top:6px;}
 .picks-box {background:#F3F0FF; border:1px solid #E2DBFF; border-radius:12px; padding:10px 16px; min-width:230px; font-size:13px; color:#3B3566;}
 .topbar {flex-wrap:wrap;}
 @media (max-width: 700px) {
   .block-container {padding-left:1rem; padding-right:1rem;}
   .topbar {flex-direction:column; align-items:stretch; gap:12px; padding:14px 16px;}
-  .brand-name {font-size:20px;}
-  .tagline {font-size:13px;}
+  .brand-name {font-size:26px;}
+  .brand-logo {font-size:38px;}
+  .tagline {font-size:14px;}
   .picks-box {min-width:0; width:100%; box-sizing:border-box;}
-  .hero {padding:16px 18px;}
-  .hero h2 {font-size:23px;}
+  .hero {padding:12px 16px;}
+  .hero h2 {font-size:18px;}
   .cover {width:84px; height:124px;}
 }
-.hero {background:linear-gradient(120deg,#FFE9EE 0%,#FFF3F6 60%,#F6F0FF 100%); border-radius:18px; padding:22px 26px; margin-bottom:6px;}
-.hero h2 {margin:0 0 4px 0; font-size:28px; color:#1B2340;}
-.hero p {margin:0; color:#4A5170; font-size:15px;}
+.hero {background:linear-gradient(120deg,#FFC9D6 0%,#FFDDE6 55%,#EBDDFF 100%); border-radius:14px; padding:14px 22px; margin-bottom:6px;}
+.hero h2 {margin:0 0 2px 0; font-size:21px; color:#1B2340;}
+.hero p {margin:0; color:#4A5170; font-size:14px;}
 .section-title {font-size:24px; font-weight:800; color:#1B2340; margin:22px 0 2px 0;}
 .section-sub {font-size:14px; color:#5F6675; margin-bottom:12px;}
 .rank {display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%;
@@ -194,22 +201,28 @@ for key, default in [("staff_picks", []), ("featured", []), ("show_recs", False)
 # ---------------------------------------------------------------
 picked = st.session_state.staff_picks
 window = st.session_state.featured
-if picked or window:
-    names = ", ".join(esc(n) for n in (picked + window)[:3])
-    if len(picked) + len(window) > 3:
-        names += " …"
-else:
-    names = "Books you add will appear here"
 
 st.markdown(
     f'<div class="topbar">'
     f'<div class="brand"><div class="brand-logo">📚</div>'
     f'<div><div class="brand-name">ReadWell Staff Console</div>'
     f'<div class="tagline">Find similar books and see what readers think. A simple tool for bookshop and library staff.</div></div></div>'
-    f'<div class="picks-box"><b>Staff picks ({len(picked)})</b> &nbsp;|&nbsp; <b>In the window ({len(window)})</b><br>{names}</div>'
     f"</div>",
     unsafe_allow_html=True,
 )
+
+
+def show_list(kind, items, empty_text):
+    """One list (staff picks or window), with a Remove button for each book."""
+    if not items:
+        st.caption(empty_text)
+        return
+    for n, title in enumerate(items):
+        col_name, col_btn = st.columns([5, 1])
+        col_name.text(f"{n + 1}. {title}")
+        if col_btn.button("Remove", key=f"remove_{kind}_{n}"):
+            items.pop(n)
+            st.rerun()
 
 # ---------------------------------------------------------------
 # Choose a book
@@ -219,6 +232,14 @@ st.markdown(
     "<p>Choose a genre and a book to get 5 similar books, with how readers felt about them.</p></div>",
     unsafe_allow_html=True,
 )
+
+# two separate lists, one tab each (they only live for this visit; nothing is saved)
+with st.expander(f"Your lists:  Staff picks ({len(picked)})  |  In the window ({len(window)})"):
+    tab_picks, tab_window = st.tabs([f"Staff picks ({len(picked)})", f"In the window ({len(window)})"])
+    with tab_picks:
+        show_list("pick", picked, "No staff picks yet. Use “Add to staff picks” on a book below.")
+    with tab_window:
+        show_list("window", window, "No books in the window yet. Use “Feature in window” on a book below.")
 
 GENRES = ["All genres", "Romance", "Fantasy", "Mystery"]
 col_genre, col_book = st.columns([1, 2])
@@ -254,6 +275,7 @@ c2.markdown(
     unsafe_allow_html=True,
 )
 
+st.markdown('<div style="height:18px"></div>', unsafe_allow_html=True)  # space between the cover and the button
 if st.button("Get recommendations", type="primary"):
     st.session_state.show_recs = True
     st.session_state.rec_idx = selected_idx
@@ -274,11 +296,12 @@ if st.session_state.show_recs and st.session_state.rec_idx is not None:
         row = books_df.iloc[i]
         bid = row["book_id"]
         tier, n_reviews, pos_pct = tier_info(bid)
-        label, fg, bg = TIERS.get(tier, TIERS["No reviews"])
+        label, fg, bg, mark = TIERS.get(tier, TIERS["No reviews"])
         review_text = f"Based on {n_reviews:,} reviews" if n_reviews else "No reviews in the data"
         year = f"{int(row['year'])}" if pd.notna(row["year"]) and row["year"] else ""
 
         with st.container(border=True):
+            st.markdown('<span class="card-marker"></span>', unsafe_allow_html=True)
             col_img, col_main, col_side = st.columns([1.1, 4.2, 2.3])
 
             col_img.markdown(cover_html(row), unsafe_allow_html=True)
@@ -294,7 +317,7 @@ if st.session_state.show_recs and st.session_state.rec_idx is not None:
 
             col_side.markdown(
                 f'<div class="sent" style="background:{bg};color:{fg}">'
-                f'<div class="sent-title">● {label}</div><div class="sent-sub">{review_text}</div></div>',
+                f'<div class="sent-title">{mark} {label}</div><div class="sent-sub">{review_text}</div></div>',
                 unsafe_allow_html=True,
             )
             if col_side.button("Add to staff picks", key=f"pick_{bid}"):
@@ -328,7 +351,7 @@ if st.session_state.show_recs and st.session_state.rec_idx is not None:
 # ---------------------------------------------------------------
 st.markdown(
     '<div class="note"><b>About the recommendations</b><br>'
-    "Books are matched by their content (description, genre and reader tags). The label shows how readers felt, "
+    "Books are matched by their content (description and reader tags). The label shows how readers felt, "
     "based on Goodreads reviews, compared with the other books in the dataset. It is a guide, not an exact score.<br><br>"
     "<b>Prototype note:</b> this demo only contains popular books from three genres (romance, fantasy and mystery), "
     "taken from a Goodreads dataset collected several years ago. Very recent books are not included.</div>",
