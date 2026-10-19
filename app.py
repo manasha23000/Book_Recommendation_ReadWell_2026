@@ -237,9 +237,9 @@ st.markdown(
 with st.expander(f"Your lists:  Staff picks ({len(picked)})  |  In the window ({len(window)})"):
     tab_picks, tab_window = st.tabs([f"Staff picks ({len(picked)})", f"In the window ({len(window)})"])
     with tab_picks:
-        show_list("pick", picked, "No staff picks yet. Use “Add to staff picks” on a book below.")
+        show_list("pick", picked, "No staff picks yet. Staff picks are books that staff recommend to customers. Use “Add to staff picks” on a book below.")
     with tab_window:
-        show_list("window", window, "No books in the window yet. Use “Feature in window” on a book below.")
+        show_list("window", window, "No books in the window yet. The window display is where books are shown to attract attention. Use “Feature in window” on a book below.")
 
 GENRES = ["All genres", "Romance", "Fantasy", "Mystery"]
 col_genre, col_book = st.columns([1, 2])
@@ -320,12 +320,14 @@ if st.session_state.show_recs and st.session_state.rec_idx is not None:
                 f'<div class="sent-title">{mark} {label}</div><div class="sent-sub">{review_text}</div></div>',
                 unsafe_allow_html=True,
             )
-            if col_side.button("Add to staff picks", key=f"pick_{bid}"):
+            if col_side.button("Add to staff picks", key=f"pick_{bid}",
+                               help="Staff picks: a short list of books that staff choose to recommend to customers, based on trends, popularity and customer requests."):
                 if row["title"] not in st.session_state.staff_picks:
                     st.session_state.staff_picks.append(row["title"])
                     st.toast(f"Added '{row['title']}' to staff picks")
                     st.rerun()
-            if col_side.button("Feature in window", key=f"feature_{bid}"):
+            if col_side.button("Feature in window", key=f"feature_{bid}",
+                               help="Window display: books picked separately for the window or a display table to attract attention, based on popularity or recommendations."):
                 if row["title"] not in st.session_state.featured:
                     st.session_state.featured.append(row["title"])
                     st.toast(f"Added '{row['title']}' to the window display")
