@@ -8,11 +8,9 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 st.set_page_config(page_title="ReadWell Staff Console", page_icon="📚", layout="wide")
 
-# ---------------------------------------------------------------
-# Data (loaded once, then kept in memory)
-# ---------------------------------------------------------------
+# Section: Data (loaded once, then kept in memory)
 GENRE_WORDS = ["romance", "fantasy", "mystery"]
-TOP_TAGS_FOR_GENRE = 6  # only the most common tags decide a book's genre
+TOP_TAGS_FOR_GENRE = 6  # a book's genre comes from its first 6 tags (the most common ones)
 
 
 def genre_list(tag_string):
@@ -31,7 +29,7 @@ def load_data():
 
 books_df, tfidf_matrix, sent_lookup = load_data()
 
-# label shown to staff, text colour, background colour, small symbol in front of the label
+# For each reception level: the words staff see, the text color, the background color and a small symbol
 TIERS = {
     "Strong reception": ("Readers loved this one", "#B3123F", "#FDE7EE", "♥"),
     "Typical reception": ("Readers liked this one", "#23806F", "#E4F4F0", "●"),
@@ -42,15 +40,13 @@ TIERS = {
 
 TAG_STYLES = [("#6C4BD8", "#EFEAFE"), ("#D6336C", "#FDE8F0"), ("#1C7ED6", "#E5F1FD")]
 
-# ---------------------------------------------------------------
-# Style
-# ---------------------------------------------------------------
+# Section: Style (colors and layout of the page)
 st.markdown(
     """
 <style>
 .stApp {background:#E6E9F2;}
 [data-testid="stExpander"] {background:#FFFFFF; border-radius:12px;}
-/* white result cards: a hidden marker inside each card lets the style find it */
+/* Make the result cards white. Each card has a tiny hidden marker, so this style can find it */
 [data-testid="stVerticalBlock"]:has(> [data-testid="stElementContainer"] .card-marker),
 [data-testid="stVerticalBlock"]:has(> .element-container .card-marker) {background:#FFFFFF; border-color:#D3D8E6 !important;}
 [data-testid="stElementContainer"]:has(.card-marker), .element-container:has(.card-marker) {display:none;}
@@ -109,9 +105,7 @@ header[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stToolb
     unsafe_allow_html=True,
 )
 
-# ---------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------
+# Section: Helper functions (small tools used by the page)
 def esc(value):
     return html.escape(str(value)) if value is not None else ""
 
@@ -164,12 +158,12 @@ def cover_html(row):
 
 from similar_rules import bundle_mask, pick_similar, series_keys
 
-# Precomputed once: who wrote each book, which series it is in, which are boxed sets, which have reviews
+# Worked out once at the start: the author and series of each book, which books are boxed sets, and which have reviews
 _author_ids = (books_df["author_id"].astype(str).tolist() if "author_id" in books_df.columns
                else [""] * len(books_df))
 if "series_keys" in books_df.columns:
     _series_sets = [frozenset(k) for k in books_df["series_keys"]]
-else:  # older data file: use only the series name written in the title
+else:  # old data file without series info: use only the series name in the title
     _series_sets = [series_keys([], t) for t in books_df["title"]]
 _is_bundle = bundle_mask(books_df["title"])
 _has_reviews = books_df["book_id"].isin(sent_lookup.index).to_numpy()
@@ -177,7 +171,7 @@ _has_reviews = books_df["book_id"].isin(sent_lookup.index).to_numpy()
 
 def similar_indices(index, n=5):
     scores = cosine_similarity(tfidf_matrix[index], tfidf_matrix).ravel()
-    # The rules for choosing books are in similar_rules.py. 
+    # The rules for choosing books are in similar_rules.py.
     return pick_similar(scores, index, _author_ids, _series_sets, _is_bundle, _has_reviews, n=n)
 
 
@@ -188,16 +182,12 @@ def tier_info(book_id):
     return "No reviews", 0, 0.0
 
 
-# ---------------------------------------------------------------
-# Session memory
-# ---------------------------------------------------------------
+# Section: Session memory (what the app remembers during one visit)
 for key, default in [("staff_picks", []), ("featured", []), ("show_recs", False), ("rec_idx", None)]:
     if key not in st.session_state:
         st.session_state[key] = default
 
-# ---------------------------------------------------------------
-# Top bar
-# ---------------------------------------------------------------
+# Section: Top bar
 picked = st.session_state.staff_picks
 window = st.session_state.featured
 
@@ -223,16 +213,14 @@ def show_list(kind, items, empty_text):
             items.pop(n)
             st.rerun()
 
-# ---------------------------------------------------------------
-# Choose a book
-# ---------------------------------------------------------------
+# Section: Choose a genre and a book
 st.markdown(
     '<div class="hero"><h2>Discover similar books</h2>'
     "<p>Choose a genre and a book to get 5 similar books, with how readers felt about them.</p></div>",
     unsafe_allow_html=True,
 )
 
-# two separate lists, one tab each (they only live for this visit; nothing is saved)
+# Two lists, one tab each. They only last for this visit and nothing is saved
 with st.expander(f"Your lists:  Staff picks ({len(picked)})  |  In the window ({len(window)})"):
     tab_picks, tab_window = st.tabs([f"Staff picks ({len(picked)})", f"In the window ({len(window)})"])
     with tab_picks:
@@ -253,7 +241,7 @@ if len(pool) == 0:
     st.warning("No books found for this genre.")
     st.stop()
 
-pool = pool.sort_values("ratings_count", ascending=False)  # most popular books first
+pool = pool.sort_values("ratings_count", ascending=False)  # show the most popular books first
 
 
 def book_label(i):
@@ -274,14 +262,12 @@ c2.markdown(
     unsafe_allow_html=True,
 )
 
-st.markdown('<div style="height:18px"></div>', unsafe_allow_html=True)  # space between the cover and the button
+st.markdown('<div style="height:18px"></div>', unsafe_allow_html=True)  # a little empty space between the cover and the button
 if st.button("Get recommendations", type="primary"):
     st.session_state.show_recs = True
     st.session_state.rec_idx = selected_idx
 
-# ---------------------------------------------------------------
-# Recommendations
-# ---------------------------------------------------------------
+# Section: Recommendations (shown after pressing the button)
 if st.session_state.show_recs and st.session_state.rec_idx is not None:
     base = books_df.loc[st.session_state.rec_idx]
     st.markdown('<div class="section-title">Similar titles for staff to consider</div>', unsafe_allow_html=True)
@@ -347,9 +333,7 @@ if st.session_state.show_recs and st.session_state.rec_idx is not None:
                 )
                 st.markdown(tags_html(row["clean_tags_str"], 8), unsafe_allow_html=True)
 
-# ---------------------------------------------------------------
-# Footer note
-# ---------------------------------------------------------------
+# Section: Note at the bottom of the page
 st.markdown(
     '<div class="note"><b>About the recommendations</b><br>'
     "Books are matched by their content (description and reader tags). The label shows how readers felt, "
