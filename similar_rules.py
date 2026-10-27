@@ -7,7 +7,7 @@ Plain-language summary of the rules, in the order they are applied:
   1. The chosen book itself is never recommended.
   2. Boxed sets, collections and omnibus editions are never recommended.
   3. Books from the SAME SERIES as the chosen book are never recommended.
-  4. A book by the SAME AUTHOR keeps only AUTHOR_PENALTY (80%) of its similarity score,
+  4. A book by the SAME AUTHOR keeps only AUTHOR_PENALTY (40%) of its similarity score,
      so it only appears if it is clearly more similar than the alternatives.
   5. In the list there is at most ONE book per series and ONE book per author.
   6. From the best candidates, books that have review data are moved to the front
@@ -18,7 +18,7 @@ import re
 import numpy as np
 
 BUNDLE_WORDS = r"box(?:ed)? set|collection|complete series|omnibus|books? \d|\d+-book|#\d+\s*-\s*\d+|#\d+-\d+"
-AUTHOR_PENALTY = 0.40  # a same-author book keeps 80% of its similarity score
+AUTHOR_PENALTY = 0.40  # a same-author book keeps 40% of its similarity score
 POOL_FACTOR = 3        # n * POOL_FACTOR good candidates are collected before the review-data-first step
 
 _SERIES_IN_TITLE = re.compile(r"\(([^()#]+?),?\s*#\s*[\d.]+[^()]*\)")
