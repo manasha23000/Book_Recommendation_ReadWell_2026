@@ -1,17 +1,17 @@
-"""Selection rules for the ReadWell book recommender.
-
-This one file is used by BOTH the Colab notebook (when it checks the recipe)
-and by app.py (when staff press "Get recommendations"), so the two always agree.
-
-Plain-language summary of the rules, in the order they are applied:
-  1. The chosen book itself is never recommended.
+"""Rules for choosing the similar books in the ReadWell book tool.
+ 
+The Colab notebook (when it tests the method) and app.py (when staff press
+"Get recommendations") both use this file, so they always follow the same rules.
+ 
+The rules, in the order they are used:
+  1. The book staff picked is never recommended.
   2. Boxed sets, collections and omnibus editions are never recommended.
-  3. Books from the SAME SERIES as the chosen book are never recommended.
-  4. A book by the SAME AUTHOR keeps only AUTHOR_PENALTY (40%) of its similarity score,
-     so it only appears if it is clearly more similar than the alternatives.
-  5. In the list there is at most ONE book per series and ONE book per author.
-  6. From the best candidates, books that have review data are moved to the front
-     (the label "Strong / Typical / Weaker" needs reviews), then the first n are shown.
+  3. Books from the same series as the picked book are never recommended.
+  4. A book by the same author keeps only 40% of its similarity score (AUTHOR_PENALTY),
+     so it shows up only if it is clearly more similar than the other books.
+  5. The list has at most one book per series and one book per author.
+  6. Books that have review data are moved to the front, because the reception
+     label needs reviews. Then the first n books are shown.
 """
 import re
 
@@ -32,10 +32,10 @@ def _norm_series_name(name):
 
 
 def series_keys(series_ids, title):
-    """Return a frozenset of keys that identify the series a book belongs to.
-
-    Two sources are combined: the series ids stored in the dataset, and the series name
-    written in the title, e.g. 'Catching Fire (The Hunger Games, #2)'.
+    """Return the keys that tell which series a book belongs to.
+ 
+    The keys come from two places: the series ids in the dataset, and the series
+    name written in the title, e.g. 'Catching Fire (The Hunger Games, #2)'.
     """
     keys = set()
     for sid in series_ids or []:
@@ -56,7 +56,7 @@ def bundle_mask(titles):
 
 
 def relation_masks(index, author_ids, series_sets):
-    """For one chosen book: which books share its series, and which share its author."""
+    """For the chosen book: which books are in its series, and which have the same author."""
     n = len(author_ids)
     query_series = series_sets[index]
     query_author = author_ids[index]
@@ -73,15 +73,15 @@ def pick_similar(scores, index, author_ids, series_sets, is_bundle, has_reviews,
                  same_series=None, same_author=None,
                  author_penalty=AUTHOR_PENALTY, pool_factor=POOL_FACTOR):
     """Choose n books to recommend for the book at position `index`.
-
-    scores       similarity of every book to the chosen book (cosine similarity, 0 to 1)
-    author_ids   list of author ids (empty string if unknown), one per book
-    series_sets  list of frozensets from series_keys(), one per book
-    is_bundle    boolean array, True for boxed sets and collections
-    has_reviews  boolean array, True if the book has review data
-    same_series / same_author  optional precomputed masks (they are computed if left out)
-
-    Returns a list of n positions (fewer if there are not enough candidates).
+ 
+    scores       how similar every book is to the chosen book (cosine similarity, 0 to 1)
+    author_ids   author id of every book (empty if unknown)
+    series_sets  series keys of every book, from series_keys()
+    is_bundle    True for boxed sets and collections
+    has_reviews  True if the book has review data
+    same_series / same_author  optional ready-made yes/no lists (made here if left out)
+ 
+    Returns the positions of n books (fewer if there are not enough good ones).
     """
     if same_series is None or same_author is None:
         same_series, same_author = relation_masks(index, author_ids, series_sets)
@@ -110,6 +110,6 @@ def pick_similar(scores, index, author_ids, series_sets, is_bundle, has_reviews,
         if len(pool) >= limit:
             break
 
-    # rule 6: books with review data first, similarity order kept inside each group
+    # rule 6: books with review data go first; inside each group the order stays the same
     pool = [i for i in pool if has_reviews[i]] + [i for i in pool if not has_reviews[i]]
     return pool[:n]
