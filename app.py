@@ -323,7 +323,7 @@ if st.session_state.show_recs and st.session_state.rec_idx is not None:
                     st.write(
                         f"**{label}.** The model reads about **{round(pos_pct)}%** of this book's "
                         f"{n_reviews:,} reviews as positive. This is an estimate, not an exact count, "
-                        "and it tends to run a little low."
+                        "and it tends to run low."
                     )
                 else:
                     st.write("There are no reviews for this book in the data.")
