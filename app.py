@@ -177,8 +177,7 @@ _has_reviews = books_df["book_id"].isin(sent_lookup.index).to_numpy()
 
 def similar_indices(index, n=5):
     scores = cosine_similarity(tfidf_matrix[index], tfidf_matrix).ravel()
-    # rules (same book, boxed sets, same series, same-author penalty, one per series/author,
-    # review data first) live in similar_rules.py, the same file the Colab notebook tested
+    # The rules for choosing books are in similar_rules.py. 
     return pick_similar(scores, index, _author_ids, _series_sets, _is_bundle, _has_reviews, n=n)
 
 
