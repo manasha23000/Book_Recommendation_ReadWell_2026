@@ -1,7 +1,7 @@
 # ReadWell Staff Console
 
 A prototype book recommendation tool for staff in small bookshops and libraries.
-It was built for a bachelor's thesis at HAMK University of Applied Sciences (BITCA):
+It was built for a bachelor's thesis at HAMK University of Applied Sciences (Computer Applications):
 "A content-based book recommendation with sentiment analysis for small businesses".
 
 Staff choose a genre and a book, press "Get recommendations", and see five similar books.
