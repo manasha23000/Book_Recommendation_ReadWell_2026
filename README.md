@@ -76,14 +76,13 @@ The books, tags and reviews come from the Goodreads dataset collected by Wan and
 downloaded from Kaggle in October 2026 (`pypiahmad/goodreads-book-reviews1`). The original dataset page is
 https://mengtingwan.github.io/data/goodreads, where the terms of use of the dataset are given.
 
-Please cite the original works:
+**Data use.** The data comes from the public Goodreads dataset on Kaggle and is used here for research and education. Please cite the papers below.
 
 > Wan, M., & McAuley, J. (2018). Item recommendation on monotonic behavior chains. *Proceedings of the 12th ACM Conference on Recommender Systems (RecSys '18)*.
 
 > Wan, M., Misra, R., Nakashole, N., & McAuley, J. (2019). Fine-grained spoiler detection from large-scale review corpora. *Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics (ACL 2019)*.
 
-The dataset is used here for a bachelor's thesis and not for commercial purposes. The data files in this repository are prepared
-from it for this study. Book covers are linked from Goodreads or Open Library and are not stored here.
+The dataset is used here for a bachelor's thesis and not for commercial purposes. The raw Goodreads files are not included in this repository; they can be downloaded from the sources above. The data files in this repository are prepared from the dataset for this study. Book covers are linked from Goodreads or Open Library and are not stored here.
 
 ## Limits of this prototype
 
@@ -103,9 +102,11 @@ from it for this study. Book covers are linked from Goodreads or Open Library an
 
 ## Author
 
-Manasha Siriwardana, HAMK University of Applied Sciences.
-Thesis details: [Thesis link ]
+**Manasha Siriwardana**, Bachelor's Thesis, Degree Programme in Computer Applications, HAMK University of Applied Sciences, Autumn 2026.
+
+Thesis Link - 
 
 ## License
 
-[a license]
+The Goodreads data's use is governed by the terms of the original dataset (see the Data section above).
+The code 
