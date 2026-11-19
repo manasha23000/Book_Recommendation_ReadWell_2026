@@ -1,17 +1,11 @@
-"""Rules for choosing the similar books in the ReadWell book tool.
+"""Selection rules for the ReadWell book recommender.
  
-The Colab notebook (when it tests the method) and app.py (when staff press
-"Get recommendations") both use this file, so they always follow the same rules.
- 
-The rules, in the order they are used:
-  1. The book staff picked is never recommended.
-  2. Boxed sets, collections and omnibus editions are never recommended.
-  3. Books from the same series as the picked book are never recommended.
-  4. A book by the same author keeps only 40% of its similarity score (AUTHOR_PENALTY),
-     so it shows up only if it is clearly more similar than the other books.
-  5. The list has at most one book per series and one book per author.
-  6. Books that have review data are moved to the front, because the reception
-     label needs reviews. Then the first n books are shown.
+1. Do not recommend the selected book itself.
+2. Exclude boxed sets, collections and omnibus editions.
+3. Exclude books from the same series.
+4. Reduce the similarity score of books by the same author to 40%.
+5. Include no more than one book per author and series.
+6. Give priority to books that have review data.
 """
 import re
 
