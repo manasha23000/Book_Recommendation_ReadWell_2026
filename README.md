@@ -25,7 +25,7 @@ The tool uses no customer accounts, purchase histories or other personal data.
 
 The work is done in two stages.
 
-1. **Preparation (Google Colab notebook, not part of this repository).** The book data is cleaned,
+1. **Preparation (Google Colab notebook in this repository: `Book_Rec_FINAL_run.ipynb`).** The book data is cleaned,
    the TF-IDF data is created and a reception label is calculated for each book. The results are saved as the data files listed below.
 2. **Application (Streamlit).** The app loads the saved files when it starts and calculates the five recommendations when a book is selected.
    It does not train or run a sentiment model.
@@ -54,6 +54,9 @@ How the reception labels are made:
 | `tfidf_app.joblib` | The saved TF-IDF data used to find similar books |
 | `book_sentiment.csv` | The reception label, number of reviews and share of positive reviews for each book |
 | `requirements.txt` | The Python packages the app needs |
+| `Book_Rec_FINAL_run.ipynb` | The Colab notebook that prepares the data and makes the app files |
+| `LICENSE` | The MIT license for the code |
+| `images/` | The screenshots used in this README |
 
 Built with Python, Streamlit, pandas, scikit-learn and joblib.
 
@@ -68,7 +71,7 @@ The data files must stay in the same folder as `app.py`.
 
 ## Online version
 
-The app is hosted on Streamlit Community Cloud: (https://book-recommendation-console-readwell.streamlit.app/)
+The app is hosted on Streamlit Community Cloud: https://book-recommendation-console-readwell.streamlit.app/
 
 ## Data
 
@@ -87,8 +90,7 @@ The dataset is used here for a bachelor's thesis and not for commercial purposes
 ## Limits of this prototype
 
 - It contains 2,941 popular books from three genres (romance, fantasy and mystery), and the newest book is from 2017.
-- The reception labels are estimates from a lightweight sentiment model, based on star ratings and on the first part of the review file.
-  They are a guide, not an exact score.
+- The reception labels are estimates from a lightweight sentiment model. It was trained on the first 200,000 matching reviews, using star ratings as labels, and    then scored every review of the books in the app. They are a guide, not an exact score.
 - The effect of each selection rule has not been tested separately.
 - A small survey (33 respondents, 13 bookshop and library staff) gave an initial view of staff interest. Its usefulness in daily work has not been shown.
 - The staff picks and window lists are kept only for the current visit and are not saved.
