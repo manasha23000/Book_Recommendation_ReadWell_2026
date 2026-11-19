@@ -108,5 +108,5 @@ Thesis Link -
 
 ## License
 
-The Goodreads data's use is governed by the terms of the original dataset (see the Data section above).
-The code 
+The code in this repository is released under the MIT License (see the `LICENSE` file).
+The use of the Goodreads data is governed by the terms of the original dataset (see the Data section above).
